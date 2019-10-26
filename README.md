@@ -1,8 +1,13 @@
 # music-dl
-A GUI for youtube-dl specifically designed for downloading royalty-free music and sounds.
+A python GUI for youtube-dl specifically designed for downloading royalty-free music and sounds.
 
 ## Installation
-To run music-dl through python, you must install the following prerequisites:
+To run music-dl using python, you must install the following prerequisites:
 
--Kivy
--ffmpeg
+* Kivy
+* ffmpeg
+* mutagen
+
+These can be installed using pip by running the following: 
+
+`python-m pip install kivy ffmpeg mutagen` 

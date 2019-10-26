@@ -12,8 +12,12 @@ from kivy.config import Config
 Config.set('graphics', 'width', '480')
 Config.set('graphics', 'height', '200')
 
-#URL input and download button
+#URL input, album input, and download button
 urlInput = TextInput(text='Enter a playlist or song URL', multiline=False)
+albumInput = TextInput(text="No Name", multiline=False)
+
+albumPopup = None
+
 downloadButton = Button(text='Download')
 
 #configuration options
@@ -26,33 +30,39 @@ def stub(instance):
     return
 
 def onDownload(instance):
-    downloadButton.text = "Working..."
-    downloadButton.bind(on_press=stub)
+    global urlInput, albumInput, albumPopup, downloadButton
 
-    global options, audio_format, album_name, urlInput, downloadButton
+    #create layout for the popup
+    layout = GridLayout(cols=1)
+
+    confirmBtn = Button(text="Confirm")
+    confirmBtn.bind(on_press=onAlbumSpecified)
+
+    layout.add_widget(albumInput)
+    layout.add_widget(confirmBtn)
 
     #ask user for the album name
-    layout = GridLayout(cols=1)
-    AlbumInput = TextInput(text="No Name", multiline=False)
-    ConfirmBtn = Button(text="Confirm")
-    popup = Popup(title="Enter Album Name", 
-            content=AlbumInput,sizehint=(None, None),
-            size=(400, 200))
-    popup.open()
+    albumPopup = Popup(title="Enter Album Name", content=layout, 
+            sizehint=(None, None), size=(400, 200))
+    albumPopup.open()
 
 def onAlbumSpecified(instance):
-    album_name = AlbumInput.text
+    global urlInput, albumInput, albumPopup, downloadButton
+    global options, audio_format, album_name
+    
+    albumPopup.dismiss()
 
+    #set the album name
+    album_name = albumInput.text
+
+    #format the command with audio format, album name, and URL
     runstr=command.format(audio_format=audio_format, album_name=album_name, URL=urlInput.text)
 
-
+    #prind the command and run it
     print(runstr)
     os.system(runstr)
 
-    downloadButton.text = "Download"
-    downloadButton.bind(on_press=onDownload)
-
-    
+    #once done downloading, remove commonalities in the file names
 
 def onRadio(instance):
     global audio_format
