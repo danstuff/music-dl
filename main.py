@@ -1,6 +1,8 @@
 import os
 
 from kivy.app import App
+from kivy.config import Config
+
 from kivy.uix.button import Button
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.textinput import TextInput
@@ -8,68 +10,43 @@ from kivy.uix.label import Label
 from kivy.uix.togglebutton import ToggleButton
 from kivy.uix.popup import Popup
 
-from kivy.config import Config
+from command import Command
+
+#set window width and height
 Config.set('graphics', 'width', '480')
 Config.set('graphics', 'height', '200')
 
-#URL input, album input, and download button
+#create instance of the command object
+command = Command()
+
+#URL input, album input
 urlInput = TextInput(text='Enter a playlist or song URL', multiline=False)
 albumInput = TextInput(text="No Name", multiline=False)
 
-albumPopup = None
-
-downloadButton = Button(text='Download')
-
-#configuration options
-command = "youtube_dl/__main__.py -i --geo-bypass --yes-playlist -x --prefer-ffmpeg --audio-format {audio_format} -o '{album_name}/%(playlist_index)s - %(title)s.%(ext)s' {URL}"
-
-audio_format = "best"
-album_name = "No Name"
+#album popup
+albumPopup = Popup(title="Enter Album Name", sizehint=(None, None), size=(400, 100))
 
 def stub(instance):
     return
 
 def onDownload(instance):
-    global urlInput, albumInput, albumPopup, downloadButton
-
-    #create layout for the popup
-    layout = GridLayout(cols=1)
-
-    confirmBtn = Button(text="Confirm")
-    confirmBtn.bind(on_press=onAlbumSpecified)
-
-    layout.add_widget(albumInput)
-    layout.add_widget(confirmBtn)
-
-    #ask user for the album name
-    albumPopup = Popup(title="Enter Album Name", content=layout, 
-            sizehint=(None, None), size=(400, 200))
+    global albumPopup 
     albumPopup.open()
 
 def onAlbumSpecified(instance):
-    global urlInput, albumInput, albumPopup, downloadButton
-    global options, audio_format, album_name
-    
+    global albumPopup, command
+    global albumInput, urlInput
+
     albumPopup.dismiss()
-
-    #set the album name
-    album_name = albumInput.text
-
-    #format the command with audio format, album name, and URL
-    runstr=command.format(audio_format=audio_format, album_name=album_name, URL=urlInput.text)
-
-    #prind the command and run it
-    print(runstr)
-    os.system(runstr)
-
-    #once done downloading, remove commonalities in the file names
+    command.run(albumInput.text, urlInput.text)
 
 def onRadio(instance):
-    global audio_format
-    audio_format = instance.text
-    print(audio_format)
+    global command
 
-class MusicDL(App):
+    command.audio_format = instance.text
+    print(">>>Switched to {af} format".format(af=command.audio_format))
+
+class MusicDLApp(App):
     def build(self):
         layout = GridLayout(cols=1, row_force_default=True, row_default_height=40)
 
@@ -93,9 +70,11 @@ class MusicDL(App):
             
             sub_layout.add_widget(btn)
 
+        #add type select sub layout to main layout 
         layout.add_widget(sub_layout)
 
         #download button
+        downloadButton = Button(text="Download")
         downloadButton.bind(on_press=onDownload)
 
         layout.add_widget(downloadButton) 
@@ -103,7 +82,20 @@ class MusicDL(App):
         #bottom copyright label
         layout.add_widget(Label(text="Created by Daniel Yost - MIT License 2019",
             font_size="11sp", padding_y="0", markup=True))
+        
+        #create layout for the popup
+        global albumPopup
+
+        popupLayout = GridLayout(cols=1)
+
+        confirmBtn = Button(text="Confirm")
+        confirmBtn.bind(on_press=onAlbumSpecified)
+
+        popupLayout.add_widget(albumInput)
+        popupLayout.add_widget(confirmBtn)
+
+        albumPopup.content = popupLayout
 
         return layout
 
-MusicDL().run()
+MusicDLApp().run()

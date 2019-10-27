@@ -10,4 +10,4 @@ To run music-dl using python, you must install the following prerequisites:
 
 These can be installed using pip by running the following: 
 
-`python-m pip install kivy ffmpeg mutagen` 
+'python -m pip install kivy ffmpeg mutagen` 
