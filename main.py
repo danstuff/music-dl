@@ -14,31 +14,30 @@ from command import Command
 
 #set window width and height
 Config.set('graphics', 'width', '480')
-Config.set('graphics', 'height', '200')
+Config.set('graphics', 'height', '320')
 
 #create instance of the command object
 command = Command()
 
-#URL input, album input
+#URL input, album input, artist input
 urlInput = TextInput(text='Enter a playlist or song URL', multiline=False)
-albumInput = TextInput(text="No Name", multiline=False)
-
-#album popup
-albumPopup = Popup(title="Enter Album Name", sizehint=(None, None), size=(400, 100))
+artistInput = TextInput(text="Artist Name", multiline=False)
+albumInput = TextInput(text="Album Name", multiline=False)
 
 def stub(instance):
     return
 
 def onDownload(instance):
-    global albumPopup 
-    albumPopup.open()
+    global command 
+    global albumInput, artistInput, urlInput
 
-def onAlbumSpecified(instance):
-    global albumPopup, command
-    global albumInput, urlInput
+    command.run(artistInput.text, albumInput.text, urlInput.text)
 
-    albumPopup.dismiss()
-    command.run(albumInput.text, urlInput.text)
+def onTag(instance):
+    global command
+    global albumInput, artistInput
+
+    command.confirmTitles(artistInput.text, albumInput.text)
 
 def onRadio(instance):
     global command
@@ -54,16 +53,18 @@ class MusicDLApp(App):
         layout.add_widget(Label(text="[color=#ffffff]music[/color][color=#ff3300]-dl[/color]",
             font_size="20sp", markup=True))
 
-        #add URL input
+        #add inputs
         layout.add_widget(urlInput)
+        layout.add_widget(artistInput)
+        layout.add_widget(albumInput)
 
         #type select is in a sub layout
         sub_layout = GridLayout(cols=5)
 
         #type select radio buttons
-        labels = ( "best", "mp3", "m4a", "wav", "ogg" )
+        labels = ( "mp3", "m4a", "wav", "ogg" )
 
-        for i in range(5):
+        for i in range(4):
             btn = ToggleButton(text=labels[i], group="format")
             btn.bind(on_press=onRadio)
             if(i == 0): btn.state = "down"
@@ -79,23 +80,16 @@ class MusicDLApp(App):
 
         layout.add_widget(downloadButton) 
 
+        #button to set filenames as title tags
+        tagButton = Button(text="Confirm File Names as MP3 Titles")
+        tagButton.bind(on_press=onTag)
+
+        layout.add_widget(tagButton)
+
         #bottom copyright label
         layout.add_widget(Label(text="Created by Daniel Yost - MIT License 2019",
             font_size="11sp", padding_y="0", markup=True))
         
-        #create layout for the popup
-        global albumPopup
-
-        popupLayout = GridLayout(cols=1)
-
-        confirmBtn = Button(text="Confirm")
-        confirmBtn.bind(on_press=onAlbumSpecified)
-
-        popupLayout.add_widget(albumInput)
-        popupLayout.add_widget(confirmBtn)
-
-        albumPopup.content = popupLayout
-
         return layout
 
 MusicDLApp().run()
