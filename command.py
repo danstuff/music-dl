@@ -23,12 +23,16 @@ class Command:
         #once done downloading, get the sorted file names and stats
         file_paths = FileOpt.getSortedFilePaths(folder_path)
 
-        #rename files, and set the base tags (wait for confirmation on title tag)
+        #set the base mp3 tags (wait for confirmation on title tag)
+        if(audio_format != "mp3"): return
+
         for i, file_path in enumerate(file_paths):
             print(file_path)
             FileOpt.setBaseTags(file_path, artist_name, album_name, str(i+1))
 
     def confirmTitles(self, artist_name, album_name):
+        if(audio_format != "mp3"): return
+
         #get the path to the songs
         folder_path = os.path.join(artist_name, album_name)
 
